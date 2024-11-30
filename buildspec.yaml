@@ -20,12 +20,12 @@ phases:
       - echo "dependencies installed"
   build:
     commands:
-      - docker build -t alizain4653/netflix-react-app:latest .
+      - docker build -t alizain4653/devops-project:latest .
   post_build:
     commands:
       - echo "waiting right now"
       - docker login -u $USERNAME -p $PASSWORD
-      - docker push alizain4653/netflix-react-app:latest
+      - docker push alizain4653/devops-project:latest
 artifacts:
   files:
     - '**/*'
