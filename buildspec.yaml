@@ -2,19 +2,27 @@ version: 0.2
 
 env:
   parameter-store:
-    DOCKER_REGISTRY_USERNAME: /cicd/docker-credentials/username
-    DOCKER_REGISTRY_PASSWORD: /cicd/docker-credentials/password
-    DOCKER_REGISTRY_URL: /cicd/docker-registry/url
-    SONAR_TOKEN: /cicd/sonar/sonar-token
+    USERNAME: /myapp/docker-credentials/username
+    PASSWORD: /myapp/docker-credentials/password
+    # DOCKER_REGISTRY_URL: /cicd/docker-registry/url
+    # SONAR_TOKEN: /cicd/sonar/sonar-token
 phases:
   install:
     runtime-versions:
-      python: 3.11
-      java: corretto17
+      nodejs: latest
+    commands:
+      - node --version
+      - echo "installed node "
+  # install:
+  #   runtime-versions:
+  #     python: 3.11
+  #     java: corretto17
   pre_build:
     commands:
-      - echo "Installing dependencies..."
-      - echo "Performing Trivy file scan before building the image..."
+      - npm install
+      - echo "dependencies installed"
+      # - echo "Installing dependencies..."
+      # - echo "Performing Trivy file scan before building the image..."
       # - wget https://github.com/aquasecurity/trivy/releases/download/v0.19.2/trivy_0.19.2_Linux-64bit.tar.gz
       # - tar zxvf trivy_0.19.2_Linux-64bit.tar.gz
       # - export PATH=$PATH:$PWD
@@ -31,13 +39,17 @@ phases:
 
   build:
     commands:
-      - echo "Running tests..."
+      # - echo "Running tests..."
       - echo "Building Docker image..."
+      - docker build -t alizain4653/netflix-react-app:latest .
       # - echo "$DOCKER_REGISTRY_PASSWORD" | docker login -u "$DOCKER_REGISTRY_USERNAME" --password-stdin "$DOCKER_REGISTRY_URL"
       # - docker build -t "$DOCKER_REGISTRY_URL/$DOCKER_REGISTRY_USERNAME/swiggy:latest" .
       # - docker push "$DOCKER_REGISTRY_URL/$DOCKER_REGISTRY_USERNAME/swiggy:latest"
-  # post_build:
-  #   commands:
+  post_build:
+    commands:
+      - echo "waiting right now"
+      - docker login -u $USERNAME -p $PASSWORD
+      - docker push alizain4653/netflix-react-app:latest
   #     - echo "Performing Trivy image scan after building the image..."
   #     - aws ses send-email --from "madithati123@gmail.com" --to "madithatisreedhar123@gmail.com" --subject "CodeBuild Status: $CODEBUILD_BUILD_ID" --text "Build status: $CODEBUILD_BUILD_STATUS" --region "ap-south-1" 
 
@@ -51,16 +63,10 @@ phases:
   #     #- aws ses send-email --from "madithati123@gmail.com" --to "madithatisreedhar123@gmail.com" --subject "CodeBuild Status: $CODEBUILD_BUILD_ID" --text "Build status: $CODEBUILD_BUILD_STATUS" --region "ap-south-1" 
   #     # Update with your preferred AWS region
 
-post_build:
-  commands:
-    - aws ses send-email \
-        --from "madithati123@gmail.com" \
-        --to "madithati123@gmail.com" \
-        --subject "CodeBuild Status: $CODEBUILD_BUILD_ID" \
-        --text "Build status: $CODEBUILD_BUILD_STATUS" \
-        --region "us-east-1" # Update with your preferred AWS region
 
-
-artifacts:
-  files:
-    - appspec.yaml
+  artifacts:
+    files:
+      - '**/*'
+    base-directory: "./"
+    name: build-artifact-name
+    discard-paths: no
